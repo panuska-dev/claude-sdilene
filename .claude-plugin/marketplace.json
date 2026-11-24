@@ -1,0 +1,14 @@
+{
+  "name": "claude-sdilene",
+  "description": "Sdílené pluginy pro Claude Code pro české vývojáře",
+  "owner": {
+    "name": "LiberaFatum"
+  },
+  "plugins": [
+    {
+      "name": "orchestrace",
+      "source": "./plugins/orchestrace",
+      "description": "Hlavní session řídí a subagenti pracují: skill pro workflows a ultracode a hook, který zamítne agenta bez výslovného modelu."
+    }
+  ]
+}
