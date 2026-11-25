@@ -1,0 +1,12 @@
+{
+  "name": "claude-sdilene",
+  "private": true,
+  "description": "Testy marketplace claude-sdilene (bez závislostí, jen vestavěné moduly Node.js)",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node tests/spust.mjs",
+    "test:rychle": "node tests/spust.mjs --rychle"
+  }
+}

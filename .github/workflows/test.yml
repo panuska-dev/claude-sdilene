@@ -1,0 +1,118 @@
+name: Testy
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  # Týdenní běh bez commitu: změnu Claude Code CLI nebo novou verzi Node.js odhalí dřív, než ji zjistí uživatelé.
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # V CI se nic tiše nepřeskakuje: bez Claude Code CLI nebo bez historie gitu testy selžou.
+  CI: 'true'
+  # Verze Claude Code CLI, na které se ověřuje instalace. Při změně uprav i README (tests/infrastruktura.test.mjs
+  # hlídá, že README uvádí stejnou verzi).
+  CLAUDE_CODE_VERSION: 2.1.318
+
+jobs:
+  test:
+    name: ${{ matrix.os }}, Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [18, 20, 22, 24]
+    steps:
+      # Akce jsou připnuté na commit (tag verze v komentáři): změna tagu v cizím repu se do běhu nedostane.
+      # fetch-depth 0: kontrola zvýšení verze (tests/verze.test.mjs) potřebuje origin/main a tagy.
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      # Instalace Claude Code podle https://code.claude.com/docs/en/setup (nativní instalátor, pevná verze).
+      - name: Claude Code CLI (Linux, macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s "$CLAUDE_CODE_VERSION"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Claude Code CLI (Windows, PowerShell)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & ([scriptblock]::Create((irm https://claude.ai/install.ps1))) $env:CLAUDE_CODE_VERSION
+          Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.local\bin"
+
+      - name: Verze nástrojů (Linux, macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          node --version
+          npm --version
+          claude --version
+
+      - name: Verze nástrojů (Windows, PowerShell)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          node --version
+          npm --version
+          claude --version
+
+      # Na Windows běží testy v PowerShellu, ne v Git Bash: plugin má fungovat i tam, kde Git Bash není.
+      - name: Testy (Linux, macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: npm test
+
+      - name: Testy (Windows, PowerShell)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: npm test
+
+  # Běh na nejnovějším Claude Code a nejnovějším Node.js: odhalí změnu chování CLI nebo Node.js dřív, než ji zjistí uživatelé.
+  # Při push a pull_request je informativní (selhání nezpůsobí červený běh; pevná verze výše je ta, na které se spoléhá README).
+  # Naplánovaný týdenní běh je ale červený, aby se selhání ozvalo bez ohledu na commity.
+  claude-latest:
+    name: nejnovější Claude Code a Node.js (${{ github.event_name == 'schedule' && 'plánovaný běh' || 'informativní' }}), Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ github.event_name != 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, latest]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Claude Code CLI (kanál latest)
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s latest
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Všechny testy
+        run: |
+          node --version
+          claude --version
+          npm test

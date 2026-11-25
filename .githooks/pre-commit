@@ -1,0 +1,17 @@
+#!/bin/sh
+# Pre-commit: spustí rychlé testy (npm run test:rychle, tedy bez E2E instalace a bez claude CLI).
+# Zapnutí v klonu repa (jednou): git config core.hooksPath .githooks
+# Funguje v Git Bash na Windows, na macOS i na Linuxu. Na Linuxu a macOS musí mít soubor příznak spustitelnosti.
+# Vědomé obejití jednoho commitu: git commit --no-verify (úplné testy a CI běží i tak).
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: v PATH chybí node, testy nejdou spustit. Nainstaluj Node.js 18 nebo novější (https://nodejs.org)." >&2
+  exit 1
+fi
+
+echo "pre-commit: spouštím rychlé testy (node tests/spust.mjs --rychle)"
+node tests/spust.mjs --rychle || {
+  echo "pre-commit: testy selhaly, commit se neprovedl. Oprav chybu podle hlášky výše, nebo commit vědomě obejdi přes --no-verify." >&2
+  exit 1
+}

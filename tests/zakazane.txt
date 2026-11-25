@@ -1,0 +1,28 @@
+# Zakázané řetězce ve veřejném repu. Test tests/obsah.test.mjs je hledá ve všech souborech (kromě tohoto) i v jejich názvech.
+# Tento soubor smí obsahovat jen obecné vzory. Konkrétní osobní údaje (jméno, e-mail, zaměstnavatel, názvy soukromých
+# věcí) patří do tests/zakazane.local.txt: stejný formát, je v .gitignore a test ho načte, když existuje.
+#
+# Formát: prázdné řádky a řádky začínající # se přeskočí.
+#   re: výraz     regulární výraz (bez ohledu na velikost písmen, unicode)
+#   povol: výraz  výjimka: shoda, kterou výraz pokrývá, se ignoruje
+#   cokoli jiného doslovný text bez ohledu na velikost písmen
+
+# cesty konkrétního počítače (Windows, macOS)
+re:[A-Za-z]:[\\/]+Users[\\/]
+re:(^|[^A-Za-z0-9_.-])/Users/[^/\s]+
+re:AppData[\\/]
+
+# e-mailový tvar; povolené jsou jen adresy noreply
+re:[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+
+povol:^[^@]*@users\.noreply\.github\.com$
+povol:^noreply@[a-z.]+$
+
+# pojmy z autorova soukromého prostředí
+re:\bmajitel
+claude-setup
+rule-to-check
+setup-sync
+worktree-gc
+issue-guard
+deny-leak
+re:\bbacklog\b

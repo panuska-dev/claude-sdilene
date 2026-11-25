@@ -1,0 +1,5 @@
+# LF všude: skripty (sh, mjs) a JSON s CRLF se na Windows rozbijí a testy obsahu CRLF zamítají.
+* text=auto eol=lf
+*.pdf binary
+*.png binary
+*.jpg binary
