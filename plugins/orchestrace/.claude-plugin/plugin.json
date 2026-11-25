@@ -1,6 +1,6 @@
 {
   "name": "orchestrace",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hlavní session řídí a subagenti pracují: skill pro workflows a ultracode a hook, který zamítne agenta bez výslovného modelu (u workflow i effortu).",
   "author": {
     "name": "LiberaFatum"

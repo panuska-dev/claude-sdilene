@@ -186,12 +186,27 @@ describe('workflow v CI (.github/workflows/test.yml)', () => {
     }
   });
 
-  it('README uvádí ověřenou hlavní verzi Node.js, která je v matici CI', () => {
+  it('README uvádí přesně ty verze Node.js a systémy, na kterých běží matice CI', () => {
+    // První matice ve workflow je hlavní (OS x Node); druhá (Node 24, latest) je informativní.
+    const node = /^\s*node:\s*\[([^\]]*)\]/m.exec(w);
+    const os = /^\s*os:\s*\[([^\]]*)\]/m.exec(w);
+    assert.ok(node && os, `V ${WORKFLOW} chybí matice os a node.`);
+    const verze = node[1].split(',').map((x) => x.trim()).filter((x) => /^\d+$/.test(x));
+    const systemy = os[1].split(',').map((x) => x.trim());
+    const NAZEV = { 'ubuntu-latest': 'Linux', 'macos-latest': 'macOS', 'windows-latest': 'Windows' };
+    const min = Math.min(...verze.map(Number));
     for (const f of ['README.md', 'plugins/orchestrace/README.md']) {
-      const m = /Node\.js (\d+)/.exec(cti(f).split('\n').filter((r) => /Ověřen/.test(r)).join('\n'));
-      assert.ok(m, `${f} neuvádí ověřenou verzi Node.js (věta "Ověřeno na ... Node.js N").`);
-      assert.match(w, new RegExp(`node:\\s*\\[[^\\]]*\\b${m[1]}\\b`), `${f} uvádí ověřený Node.js ${m[1]}, ale matice v ${WORKFLOW} ho nemá.`);
+      const radek = cti(f).split('\n').filter((r) => /Ověřen/.test(r)).join('\n');
+      assert.ok(radek, `${f} neuvádí ověřené verze (řádek se slovem "Ověřeno" nebo "Ověřené").`);
+      const uvedene = [...radek.matchAll(/Node\.js ([\d, a]+)/g)].flatMap((m) => m[1].match(/\d+/g) ?? []);
+      assert.deepEqual([...new Set(uvedene)].sort(), [...verze].sort(), `${f}: ověřené verze Node.js (${uvedene.join(', ')}) nesedí s maticí v ${WORKFLOW} (${verze.join(', ')}).`);
+      for (const s of systemy) {
+        assert.ok(NAZEV[s], `Neznámý runner ${s} v matici; doplň jeho název do testu.`);
+        assert.ok(radek.includes(NAZEV[s]), `${f}: ověřené systémy nezmiňují ${NAZEV[s]} (${s} je v matici CI).`);
+      }
+      assert.ok(radek.includes(`než ${min}`), `${f}: chybí věta, že Node.js starší než ${min} podporovaný není.`);
     }
+    assert.equal(JSON.parse(cti('package.json')).engines?.node, `>=${min}`, `package.json engines.node má být ">=${min}" (nejnižší Node.js v matici CI).`);
   });
 });
 

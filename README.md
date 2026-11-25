@@ -21,7 +21,7 @@ claude plugin install orchestrace@claude-sdilene
 - **Rozsah:** instalace z příkazové řádky nainstaluje plugin pro tebe do všech projektů (user scope).
 - **Požadavky:** hook v pluginu potřebuje Node.js v `PATH` (ověříš `node --version`). Node.js stáhneš z https://nodejs.org. Po instalaci otevři nový terminál a restartuj Claude Code, aby našel `node` v `PATH`. Bez Node.js plugin funguje jen jako skill; Claude Code při každém volání agenta nebo workflow ukáže varování o chybě hooku a kontrola neběží.
 - **Aktuální Claude Code:** aliasy modelů (`fable`, `opus`, `sonnet`, `haiku`) se posouvají s verzí Claude Code, proto ho udržuj aktuální příkazem `claude update`.
-- **Ověřené verze:** Claude Code 2.1.318 a Node.js 24, starší verze ověřené nejsou.
+- **Ověřené verze:** testy v CI běží na Windows, macOS a Linuxu s Node.js 18, 20, 22 a 24 a s Claude Code 2.1.318, jednou týdně i proti nejnovějšímu Claude Code. Node.js starší než 18 podporovaný není.
 
 ## Pluginy
 

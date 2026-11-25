@@ -56,7 +56,7 @@ claude plugin enable orchestrace@claude-sdilene
 
 - Node.js dostupný v `PATH` (ověříš `node --version`). Node.js stáhneš z https://nodejs.org. Po instalaci otevři nový terminál a restartuj Claude Code, aby našel `node` v `PATH`.
 - Bez Node.js plugin funguje jen jako skill; Claude Code při každém volání agenta nebo workflow ukáže varování o chybě hooku, volání pustí a kontrola neběží.
-- Ověřeno na Claude Code 2.1.318 a Node.js 24; hook používá jen standardní moduly `node:`, minimální verze ale ověřená není.
+- Ověřeno v CI na Windows, macOS a Linuxu s Node.js 18, 20, 22 a 24 a s Claude Code 2.1.318. Node.js starší než 18 podporovaný není. Hook používá jen standardní moduly `node:`.
 
 ## Licence
 
