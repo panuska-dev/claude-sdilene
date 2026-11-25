@@ -53,9 +53,15 @@ function uspech(r) {
   return r;
 }
 
+// Novější Claude Code (ověřeno na 2.1.332) vypisuje i vestavěné pluginy s id `<jméno>@builtin`.
+// Jsou součástí Claude Code, ne profilu, proto se do seznamu nainstalovaných nepočítají.
+const jeVestaveny = (x) => typeof x?.id === 'string' && x.id.endsWith('@builtin');
+
 function ctiSeznam() {
   const r = uspech(cl('plugin', 'list', '--json'));
-  try { return JSON.parse(r.stdout); } catch { return assert.fail(`${r.popis} nevrátil platný JSON:\n${r.stdout.slice(0, 600)}`); }
+  let seznam;
+  try { seznam = JSON.parse(r.stdout); } catch { return assert.fail(`${r.popis} nevrátil platný JSON:\n${r.stdout.slice(0, 600)}`); }
+  return seznam.filter((x) => !jeVestaveny(x));
 }
 
 const hash = (f) => createHash('sha256').update(readFileSync(f)).digest('hex');
